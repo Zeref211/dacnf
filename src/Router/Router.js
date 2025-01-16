@@ -12,6 +12,7 @@ import Updateu from '../Component/Updateu';
 import Cart from '../Component/Cart';
 import Hoadon from '../Component/Hoadon';
 import Loginad from '../Component/Loginad';
+import ShowHoaDon from '../Component/ShowHoaDon';
 
 
 function Router() {
@@ -31,7 +32,7 @@ function Router() {
                 <Route path="/ProductDetail/:id" element={<ProductDetail/>}/>
                 <Route path="/Hoadon" element={<Hoadon/>}/>
                 <Route path="/loginad" element={<Loginad/>}/>
-               
+                <Route path="/showhoadon/:id" element={<ShowHoaDon />} /> 
             </Routes>
         </BrowserRouter>
     </div>

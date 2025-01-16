@@ -6,37 +6,39 @@ import axios from 'axios';
 import ProductTable from './ProductTable';
 
 function Product() {
-  const[product,setProduct]=useState([])
-  useEffect(()=>{
+  const [product, setProduct] = useState([])
+  useEffect(() => {
     axios.get('http://localhost:4000/product')
-    .then(res=>setProduct(res.data))
-    .catch(err=>console.log("sai r"))
-    
-  },[])
-  
+      .then(res => setProduct(res.data))
+      .catch(err => console.log("sai r"))
+
+  }, [])
+
   return (
-    
+
     <div>
-      <Header/>
-        
+      <Header />
+
       <div className="container">
         <div className="row">
-      
-        
-      {product.map((product,i)=>{
-        return(
-          <div className="col-4">
-      <div className="sp mt-4 ">
-          <ProductTable id={product.masp} tensp={product.tensp} gia={product.gia} hinh={product.hinh}/>
-          </div>
- </div>
-        )
-    
-  })}
- </div>
- 
- 
- </div>
+
+
+          {product.map((product, i) => {
+            return (
+              <div className="col-4">
+                <div className="sp mt-4 ">
+                  <ProductTable id={product.masp} tensp={product.tensp} gia={product.gia} hinh={product.hinh} />
+                  
+                  
+                </div>
+              </div>
+            )
+
+          })}
+        </div>
+
+
+      </div>
 
     </div>
   )

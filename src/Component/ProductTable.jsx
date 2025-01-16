@@ -12,7 +12,7 @@ function ProductTable(props) {
           <Link to={`/ProductDetail/${props.id}`}>
           <img
             className="card-img-top img-sp"
-            src="https://dummyimage.com/350x400/aba9ab/000000"
+            src={props.hinh}
             alt="Card image"
           />
           </Link>

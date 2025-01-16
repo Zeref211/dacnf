@@ -1,81 +1,71 @@
-import React, { useEffect, useState } from 'react'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faUser } from '@fortawesome/free-solid-svg-icons';
-import { faCartShopping } from '@fortawesome/free-solid-svg-icons';
-import { Link, useNavigate, useParams } from "react-router-dom";
-import Sreach from './Sreach';
+import React, { useEffect, useState } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faUser, faCartShopping } from '@fortawesome/free-solid-svg-icons';
+import { Link } from 'react-router-dom';
 import axios from 'axios';
+import 'bootstrap/dist/css/bootstrap.min.css'; // Import Bootstrap CSS
 
 function Header() {
-  const [name,setName]=useState('');
-  const[auth,setAuth]=useState(false); 
-  const[message,setMessage]=useState('');
-  const[makh,setMakh]=useState('');
+  const [name, setName] = useState('');
+  const [auth, setAuth] = useState(false);
+  const [makh, setMakh] = useState(''); // Lưu mã khách hàng (makh)
+
   axios.defaults.withCredentials = true;
-  const handelDelete=()=>{
+
+  const handleLogout = () => {
     axios.get('http://localhost:4000/logout')
-    .then(res => window.location.reload(true))
-    .catch(err => console.log(err))
-  }
-  useEffect(()=>{
-    const checktoken = async() => {
+      .then(() => window.location.reload(true))
+      .catch(err => console.log(err));
+  };
+
+  useEffect(() => {
+    const checkToken = async () => {
       try {
-        const res = await axios.get('http://localhost:4000/auth')
-        if(res.data.Status ==="Success"){
-          setAuth(true)
-          setName(res.data.name)
-          setMakh(res.data.makh)
-        }else{
-          setAuth(false)
-          setMessage(res.data.Error)
+        const res = await axios.get('http://localhost:4000/auth');
+        if (res.data.Status === "Success") {
+          setAuth(true);
+          setName(res.data.name);
+          setMakh(res.data.makh); // Lưu mã khách hàng
+        } else {
+          setAuth(false);
         }
       } catch (error) {
         console.log(error);
       }
-    }
-    checktoken()
-  },[])
-  
+    };
+    checkToken();
+  }, []);
+
   return (
-    <div>
-         <>
-  
-  <div>
-<header className="header">
-  <Link to="/" className="logo">Zeref</Link>
-  <nav className="menu">
-    <Link to="/Product">Product</Link>
-    
-    <a href="#">Aubot</a>
-    <a href="#">Contact</a>
-    <a href="#">Mail</a>
-  </nav>
-  {/* <Sreach/> */}
-  <div className="right">
-    
-    <Link to ="">
-    {name}
-   
-    
-    </Link>
-    <Link to ="/login">
-    <FontAwesomeIcon icon={faUser} />
-    </Link>
-    <Link to ="/cart">
-    <FontAwesomeIcon icon={faCartShopping} />
-    </Link>
-   
-  
-  </div>
- {auth && (
-          <button className="btn btn-danger nav-item w-20 dangxuat" onClick={handelDelete}>Đăng xuất</button>
-        )}</header>
+    <header className="bg-dark p-3">
+      <div className="container-fluid d-flex justify-content-between align-items-center">
+        <Link to="/" className="navbar-brand text-white">Zeref</Link>
 
-</div>
-</>
+        <nav className="d-flex gap-3">
+          <Link to="/Product" className="nav-link text-white">Sản Phẩm</Link>
+          {auth && (
+            <Link to={`/showhoadon/${makh}`} className="nav-link text-white">Hóa Đơn</Link> // Chuyển hướng đúng với mã khách hàng
+          )}
+        </nav>
 
-    </div>
-  )
+        <div className="d-flex align-items-center gap-3">
+          {auth ? (
+            <>
+              <span className="text-white">Xin chào, {name}</span>
+              <button className="btn btn-danger" onClick={handleLogout}>Đăng Xuất</button>
+            </>
+          ) : (
+            <Link to="/login" className="text-white">
+              <FontAwesomeIcon icon={faUser} />
+            </Link>
+          )}
+          <Link to="/cart" className="text-white">
+            <FontAwesomeIcon icon={faCartShopping} />
+          </Link>
+        </div>
+      </div>
+    </header>
+  );
 }
 
-export default Header
+export default Header;

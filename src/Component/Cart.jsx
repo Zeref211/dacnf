@@ -28,8 +28,12 @@ function Cart() {
   const navigate = useNavigate();
 
   axios.defaults.withCredentials = true;
-  const total = product.reduce((total, item) => total + item.gia * item.soluong, 0);
-  const totalsoluong = product.reduce((total, item) => total + item.soluong, 0);
+  const total = product
+  .filter(item => item.trangthai === '1')
+  .reduce((total, item) => total + item.gia * item.soluong, 0);
+  const totalsoluong = product
+  .filter(item => item.trangthai === '1') 
+  .reduce((total, item) => total + item.soluong, 0);
 
   useEffect(() => {
     const checkToken = async () => {
@@ -71,65 +75,79 @@ function Cart() {
     }));
   }, [selectedValue, total, totalsoluong, currentDate, makh]);
   const handleCheckboxChange = async (e, item) => {
-    if (e.target.checked) {
-        
-        try {
-            await axios.post(`http://localhost:4000/updatetrangthai/${item.masp}/${item.size}`, {
-                trangthai: 1  
-            });
-            setCheckedItems([...checkedItems, { ...item, trangthai: 1 }]);
-        } catch (error) {
-            console.error('Lỗi khi cập nhật trạng thái sản phẩm:', error);
+    const newStatus = e.target.checked ? '1' : '0'; // Xác định trạng thái mới
+
+    try {
+      // Gọi API để cập nhật trạng thái sản phẩm
+      await axios.post(`http://localhost:4000/updatetrangthai/${item.masp}/${item.size}`, {
+        trangthai: newStatus,
+      });
+
+      // Cập nhật danh sách sản phẩm trong state
+      setProduct((prevProducts) =>
+        prevProducts.map((product) =>
+          product.masp === item.masp && product.size === item.size
+            ? { ...product, trangthai: newStatus }
+            : product
+        )
+      );
+
+      // Cập nhật danh sách sản phẩm đã được chọn
+      setCheckedItems((prevItems) => {
+        if (e.target.checked) {
+          // Thêm vào danh sách nếu checkbox được chọn
+          return [...prevItems, { ...item, trangthai: newStatus }];
+        } else {
+          // Loại bỏ khỏi danh sách nếu checkbox bị bỏ chọn
+          return prevItems.filter((i) => i.masp !== item.masp || i.size !== item.size);
         }
-    } else {
-        
-        try {
-            await axios.post(`http://localhost:4000/updatetrangthai/${item.masp}/${item.size}`, {
-                trangthai: 0  
-            });
-            setCheckedItems(checkedItems.filter(i => i.masp !== item.masp || i.size !== item.size));
-        } catch (error) {
-            console.error('Lỗi khi cập nhật trạng thái sản phẩm:', error);
-        }
+      });
+    } catch (error) {
+      console.error('Lỗi khi cập nhật trạng thái sản phẩm:', error);
     }
-};
+  };
 
   const handleChange = (event) => {
     setSelectedValue(event.target.value);
   };
   const selectedProducts = product.filter(item => item.trangthai === '1');
- 
- 
+
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (selectedValue === 'cod') {
-      try {
-        await axios.post('http://localhost:4000/addhoadon', hoadon);
+    try {
+      if (selectedValue === 'cod') {
+        // Thanh toán COD
+        const res = await axios.post('http://localhost:4000/addhoadon', hoadon);
+        const mahd = res.data.data.insertId; // Lấy mahd từ phản hồi
+  
+        // Gọi API để cập nhật mahd vào giỏ hàng
+        await axios.post(`http://localhost:4000/updatecartmahd`, { makh, mahd });
+  
         alert('Mua hàng thành công');
-        // await axios.get(`http://localhost:4000/clearcart/${makh}`);
-        setProduct([]);
-      } catch (error) {
-        console.error('Lỗi khi mua hàng COD:', error);
+        setProduct([]); // Xóa giỏ hàng trên giao diện
+        navigate('/showhoadon/:makh');
+        
+      } else if (selectedValue === "bank") {
+        const paymentResponse = await axios.post("http://localhost:4000/payment", {
+          hoadon,
+          amount: total.toString(), // Gửi tổng tiền
+        });
+        console.log("Phản hồi từ server:", paymentResponse.data);
+        if (paymentResponse.data.payUrl) {
+          // Chuyển hướng người dùng đến trang thanh toán MoMo
+          window.location.href = paymentResponse.data.payUrl;
+        } else {
+          alert("Không thể tạo liên kết thanh toán. Vui lòng thử lại.");
+          
+        }
       }
-    } else if (selectedValue === 'bank') {
-      try {
-        const paymentData = {
-          amount: total.toString(),
-          orderInfo: 'Thông tin đơn hàng',
-          redirectUrl: 'http://localhost:3000/',
-          ipnUrl: 'https://0778-14-178-58-205.ngrok-free.app/callback',
-          requestType: 'payWithMethod',
-          hoadon: hoadon,
-        };
-        const response = await axios.post('http://localhost:4000/payment', paymentData);
-        window.location.href = response.data.payUrl;
-        await axios.get(`http://localhost:4000/clearcart/${makh}`);
-      } catch (error) {
-        console.error('Lỗi khi thanh toán MoMo:', error);
-      }
+    } catch (error) {
+      console.error('Lỗi khi thanh toán:', error);
     }
   };
+
 
   return (
     auth ? (
@@ -153,13 +171,8 @@ function Cart() {
                   <td>
                     <input
                       type="checkbox"
-                      onChange={(e) => {
-                        if (e.target.checked) {
-                          console.log(`Sản phẩm được chọn: ${item.tensp}`);
-                        } else {
-                          console.log(`Sản phẩm bị bỏ chọn: ${item.tensp}`);
-                        }
-                      }}
+                      checked={item.trangthai === '1'}
+                      onChange={(e) => handleCheckboxChange(e, item)}
                     />
                   </td>
                   <td>{item.tensp}</td>

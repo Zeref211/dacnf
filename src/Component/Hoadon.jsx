@@ -38,7 +38,7 @@ function Hoadon() {
   useEffect(() => {
     const getAllNhanVien = async () => {
       try {
-        const res = await axios.get("http://localhost:4000/nhanvien");
+        const res = await axios.get("http://localhost:4000/loginad");
         setNhanviens(res.data.data);
       } catch (error) {
         console.log(error);

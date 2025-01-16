@@ -76,13 +76,13 @@ function ProductDetail() {
                 <div className="row">
                   <div className="col-3 w-30px">
                     <a href="" className="imgp">
-                      <img src="https://dummyimage.com/700x900/aba9ab/aba9ab" alt="" style={{ width: '200px', height: '200px' }} />
+                      <img src={product.hinh} alt="" style={{ width: '200px', height: '200px' }} />
                     </a>
                   </div>
 
                   <div className="col-6 thongtin  ">
                     <h4>{product.tensp}</h4>
-                    <p>{product.gia}</p>
+                    <h5>Giá:{product.gia}₫</h5>
                     <div className="size mt-5">
                       <h6>Select size</h6>
 
@@ -108,11 +108,10 @@ function ProductDetail() {
   <button href="" className="Add " onClick={() => {
 
     if (flag === 0) {
-      // Lấy ngày hiện tại
-      const today = new Date();
-      const ngaylaphoadon = today.toISOString().split('T')[0]; // Format YYYY-MM-DD
       
-      // Gửi request thêm sản phẩm vào giỏ hàng với ngaylaphoadon và mahd
+      const today = new Date();
+      const ngaylaphoadon = today.toISOString().split('T')[0]; 
+      
       axios.post('http://localhost:4000/addCart', {
         makh: makh,
         masp: product.masp,
@@ -120,10 +119,11 @@ function ProductDetail() {
         gia: product.gia,
         soluong: 1,
         size: selectSize,
-        ngaylaphoadon: ngaylaphoadon, // Thêm ngày lập hóa đơn
-        mahd: null // Giá trị mặc định, có thể lấy từ sản phẩm hoặc khởi tạo
+        ngaylaphoadon: ngaylaphoadon, 
+        mahd: null 
       }).then((res) => {
         console.log(res);
+        window.location.reload()
        
       })
     } else {
